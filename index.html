@@ -52,6 +52,11 @@ header .sub{font-size:.8rem;color:#94a3b8;font-weight:400;margin-top:2px}
 .btn.selected-correct{background:rgba(52,211,153,.2);border-color:#34d399;box-shadow:0 0 20px rgba(52,211,153,.15)}
 .btn.selected-wrong{background:rgba(248,113,113,.2);border-color:#f87171;box-shadow:0 0 20px rgba(248,113,113,.15)}
 .btn.show-correct{border-color:rgba(52,211,153,.4);background:rgba(52,211,153,.08)}
+@keyframes pulse-correct{0%{box-shadow:0 0 0 0 rgba(52,211,153,.6)}50%{box-shadow:0 0 50px 12px rgba(52,211,153,.3)}100%{box-shadow:0 0 0 0 rgba(52,211,153,.6)}}
+@keyframes shake-wrong{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@keyframes flash-wrong{0%{box-shadow:0 0 0 0 rgba(248,113,113,.6)}25%{box-shadow:0 0 50px 12px rgba(248,113,113,.3)}50%{box-shadow:0 0 25px 6px rgba(248,113,113,.2)}75%{box-shadow:0 0 50px 12px rgba(248,113,113,.3)}100%{box-shadow:0 0 0 0 rgba(248,113,113,.6)}}
+.animate-correct{animation:pulse-correct .7s ease-out!important}
+.animate-wrong{animation:shake-wrong .5s ease-out,flash-wrong .7s ease-out!important}
 .explanation{background:rgba(30,30,60,.5);border-radius:12px;padding:16px 18px;margin-top:4px;border-left:3px solid #a78bfa;font-size:.88rem;line-height:1.6;color:#94a3b8;display:none}
 .explanation:not(:empty){display:block}
 .next-btn{padding:14px 20px;border:none;border-radius:12px;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:16px;font-family:inherit;width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
@@ -187,7 +192,7 @@ const DATA = [
   {q:"De las tres meninges que envuelven al encéfalo y a la médula espinal, la piamadre es la más externa.",a:false,t:"Tema 1"},
   {q:"El cerebelo se divide en las siguientes estructuras: el tronco encefálico, el encéfalo, el diencéfalo y el telencéfalo.",a:false,t:"Tema 1"},
   {q:"El bulbo raquídeo conecta el encéfalo con la médula espinal.",a:true,t:"Tema 1"},
-  {q:"El sistema límbico está integrado por un conjunto de estructuras situadas en la cara externa de cada hemisferio.",a:false,t:"Tema 1"},
+  {q:"El sistema límbico está integrado por un conjunto de estructuras situadas en la cara interna de cada hemisferio.",a:false,t:"Tema 1"},
   {q:"La circunvolución del cíngulo es una estructura con forma de almendra, que participa en el procesamiento emocional de los estímulos ambientales (es decir, en la atribución de significado emocional a dichos estímulos).",a:false,t:"Tema 1"},
   {q:"Desde el punto de vista anatómico, en la corteza pueden identificarse cuatro lóbulos.",a:true,t:"Tema 1"},
   {q:"En la corteza cerebral, tanto el lóbulo parietal como el temporal se ubican detrás del lóbulo frontal.",a:true,t:"Tema 1"},
@@ -368,7 +373,7 @@ const DATA = [
   {q:"Los procesos cerebrales que tienen lugar durante la lectura en voz alta son, esencialmente, los mismos que ocurren durante la lectura en silencio.",a:true,t:"Examen 2"},
   {q:"Las dos vías propuestas por la teoría de la ruta dual de la lectura son entre sí excluyentes.",a:false,t:"Examen 2"},
   {q:"Los métodos de enseñanza de las matemáticas centrados en el aprendizaje de estrategias son preferibles a los centrados en el aprendizaje de instrucciones.",a:true,t:"Examen 2"},
-  {q:"La verdadera diferencia entre argumentos deductivos e inductivos se refiere a la fuerza deductiva y a la validez inductiva de los argumentos.",a:false,t:"Examen 2"},
+  {q:"La verdadera diferencia entre argumentos deductivos e inductivos se refiere a la generalidad de sus conclusiones y a la particularidad de sus premisas.",a:false,t:"Examen 2"},
   {q:"El razonamiento humano no está determinado exclusivamente por las leyes de la lógica.",a:true,t:"Examen 2"},
   {q:"Durante el proceso de razonamiento, los tiempos de respuesta son más largos cuando el resultado del razonamiento implica una respuesta positiva.",a:false,t:"Examen 2"},
   {q:"Un problema surge cuando la persona desconoce cómo llegar de la situación presente a la situación deseada a través de la acción.",a:true,t:"Examen 2"},
@@ -458,6 +463,44 @@ const DATA = [
   {q:"La toma de decisiones no suele verse alterada en los trastornos psiquiátricos y del neurodesarrollo.",a:false,t:"Examen 4"}
 ];
 
+// Sound effects using Web Audio API
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playCorrectSound() {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+    osc.frequency.setValueAtTime(523, ctx.currentTime);
+    osc.frequency.setValueAtTime(659, ctx.currentTime + 0.1);
+    osc.frequency.setValueAtTime(784, ctx.currentTime + 0.2);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.35);
+  } catch(e) {}
+}
+function playWrongSound() {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sawtooth';
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+    osc.frequency.setValueAtTime(300, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.35);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.4);
+  } catch(e) {}
+}
+
 const $ = id => document.getElementById(id);
 const allQuestions = DATA.map((q, i) => ({...q, id: i, explanation: ''}));
 let filtered = [...allQuestions];
@@ -522,8 +565,17 @@ function handleAnswer(selected) {
   answered = true;
   const q = filtered[current];
   const correct = selected === q.a;
-  if (correct) { hits++; $('hitsCount').textContent = hits; }
-  else { misses++; $('missesCount').textContent = misses; }
+  if (correct) {
+    hits++; $('hitsCount').textContent = hits;
+    playCorrectSound();
+    $('quizCard').classList.add('animate-correct');
+    setTimeout(() => $('quizCard').classList.remove('animate-correct'), 700);
+  } else {
+    misses++; $('missesCount').textContent = misses;
+    playWrongSound();
+    $('quizCard').classList.add('animate-wrong');
+    setTimeout(() => $('quizCard').classList.remove('animate-wrong'), 700);
+  }
   $('btnTrue').disabled = true; $('btnFalse').disabled = true;
   if (q.a === true) {
     $('btnTrue').classList.add(selected === true ? 'selected-correct' : 'show-correct');
