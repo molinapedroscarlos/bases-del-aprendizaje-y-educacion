@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bases del Aprendizaje y Educación - Simulador V/F</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Outfit','Plus Jakarta Sans',system-ui,sans-serif;background:#0f0f1a;color:#e2e8f0;min-height:100vh;overflow-x:hidden}
+.background-glows{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
+.glow{position:absolute;border-radius:50%;filter:blur(80px);opacity:.15}
+.glow-1{width:600px;height:600px;background:#7c3aed;top:-200px;right:-200px}
+.glow-2{width:500px;height:500px;background:#3b82f6;bottom:-150px;left:-150px}
+.glow-3{width:400px;height:400px;background:#a78bfa;top:50%;left:50%;transform:translate(-50%,-50%)}
+.app-container{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:16px;min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:14px;padding:20px 0 16px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:20px}
+.logo-icon{width:44px;height:44px;background:linear-gradient(135deg,#7c3aed,#a78bfa);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#fff;flex-shrink:0}
+header h1{font-size:1.25rem;font-weight:700;color:#f1f5f9;line-height:1.2}
+header .sub{font-size:.8rem;color:#94a3b8;font-weight:400;margin-top:2px}
+.card{background:linear-gradient(145deg,rgba(30,30,60,.6),rgba(20,20,45,.8));border-radius:16px;padding:24px;border:1px solid rgba(255,255,255,.06);backdrop-filter:blur(12px)}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.topic-tag{display:inline-block;background:rgba(124,58,237,.15);color:#a78bfa;font-size:.75rem;padding:4px 14px;border-radius:20px;font-weight:600;border:1px solid rgba(124,58,237,.2)}
+.filter-section{margin-bottom:20px}
+.filter-section h2{font-size:.95rem;font-weight:600;color:#cbd5e1;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.filter-pills{display:flex;flex-wrap:wrap;gap:8px}
+.filter-pill{padding:8px 18px;border-radius:20px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:#94a3b8;font-size:.82rem;font-weight:500;cursor:pointer;transition:all .2s;font-family:inherit}
+.filter-pill:hover{background:rgba(124,58,237,.12);border-color:rgba(124,58,237,.3);color:#c4b5fd}
+.filter-pill.active{background:rgba(124,58,237,.2);border-color:rgba(124,58,237,.4);color:#a78bfa}
+.progress-card{margin-bottom:16px;padding:16px 24px}
+.progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:.85rem}
+.progress-header .label{color:#94a3b8;font-weight:500}
+.progress-header .score{display:flex;gap:16px;font-weight:600}
+.progress-header .score .hits{color:#34d399}
+.progress-header .score .misses{color:#f87171}
+.progress-bar{width:100%;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.progress-bar .fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#7c3aed,#a78bfa);transition:width .4s ease;width:0%}
+.quiz-card{padding:28px 24px;display:flex;flex-direction:column}
+.quiz-card .topic-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.quiz-card .question-num{font-size:.8rem;color:#64748b;font-weight:500}
+.question-text{font-size:1.05rem;line-height:1.7;color:#f1f5f9;margin-bottom:28px;flex:1;font-weight:400}
+.buttons{display:flex;gap:12px;margin-bottom:16px}
+.btn{flex:1;padding:16px;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-true{background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2)}
+.btn-true:hover:not(:disabled){background:rgba(52,211,153,.18);border-color:rgba(52,211,153,.35);transform:translateY(-1px)}
+.btn-false{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.2)}
+.btn-false:hover:not(:disabled){background:rgba(248,113,113,.18);border-color:rgba(248,113,113,.35);transform:translateY(-1px)}
+.btn:disabled{opacity:.35;cursor:default;transform:none}
+.btn.selected-correct{background:rgba(52,211,153,.2);border-color:#34d399;box-shadow:0 0 20px rgba(52,211,153,.15)}
+.btn.selected-wrong{background:rgba(248,113,113,.2);border-color:#f87171;box-shadow:0 0 20px rgba(248,113,113,.15)}
+.btn.show-correct{border-color:rgba(52,211,153,.4);background:rgba(52,211,153,.08)}
+.explanation{background:rgba(30,30,60,.5);border-radius:12px;padding:16px 18px;margin-top:4px;border-left:3px solid #a78bfa;font-size:.88rem;line-height:1.6;color:#94a3b8;display:none}
+.explanation:not(:empty){display:block}
+.next-btn{padding:14px 20px;border:none;border-radius:12px;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:16px;font-family:inherit;width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
+.next-btn.next{background:linear-gradient(135deg,#7c3aed,#a78bfa);color:#fff}
+.next-btn.next:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 20px rgba(124,58,237,.3)}
+.next-btn.finish{background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.2)}
+.next-btn.finish:hover:not(:disabled){background:rgba(52,211,153,.2)}
+.next-btn:disabled{opacity:.3;cursor:default;transform:none}
+.summary{text-align:center;padding:10px 0 20px;display:none}
+.summary h2{font-size:1.5rem;font-weight:700;color:#f1f5f9;margin-bottom:6px}
+.summary .sub{color:#94a3b8;font-size:.9rem;margin-bottom:24px}
+.results-grid{display:flex;gap:12px;margin-bottom:28px}
+.result-box{flex:1;background:rgba(255,255,255,.03);border-radius:12px;padding:18px 12px;border:1px solid rgba(255,255,255,.06)}
+.result-box .num{font-size:1.8rem;font-weight:800;color:#a78bfa}
+.result-box .num.good{color:#34d399}
+.result-box .num.bad{color:#f87171}
+.result-box .lbl{font-size:.8rem;color:#64748b;margin-top:4px}
+.review-section{margin-top:20px;text-align:left}
+.review-section h3{font-size:.95rem;font-weight:600;color:#cbd5e1;margin-bottom:14px}
+.review-item{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.82rem;display:flex;gap:8px;align-items:flex-start;line-height:1.5}
+.review-item .icon{flex-shrink:0;margin-top:2px}
+.review-item .q-text{color:#94a3b8}
+.retry-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 36px;background:linear-gradient(135deg,#7c3aed,#a78bfa);color:#fff;border:none;border-radius:12px;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:10px;font-family:inherit}
+.retry-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(124,58,237,.3)}
+footer{text-align:center;padding:24px 0 16px;color:#475569;font-size:.78rem;margin-top:auto}
+.hidden{display:none!important}
+.kbd{display:inline-block;padding:2px 6px;background:rgba(255,255,255,.06);border-radius:4px;font-size:.7rem;color:#64748b;border:1px solid rgba(255,255,255,.08);margin:0 2px;font-family:inherit}
+.keyhint{text-align:center;font-size:.75rem;color:#475569;margin-top:16px;display:flex;justify-content:center;gap:16px}
+.empty-state{padding:40px 20px;text-align:center;color:#64748b}
+.empty-state i{font-size:2.5rem;color:#a78bfa;margin-bottom:14px;opacity:.5}
+.empty-state p{font-size:.9rem}
+@media(max-width:500px){
+  .app-container{padding:10px}
+  .card{padding:18px 16px}
+  .quiz-card{padding:20px 16px}
+  .buttons{flex-direction:column}
+  .results-grid{flex-direction:column;gap:8px}
+  header h1{font-size:1.05rem}
+  .question-text{font-size:.95rem}
+}
+</style>
+</head>
+<body>
+<div class="background-glows">
+  <div class="glow glow-1"></div>
+  <div class="glow glow-2"></div>
+  <div class="glow glow-3"></div>
+</div>
+
+<div class="app-container">
+  <header>
+    <div class="logo-icon"><i class="fa-solid fa-brain"></i></div>
+    <div>
+      <h1>Bases del Aprendizaje y Educación</h1>
+      <div class="sub">Simulador de preguntas Verdadero / Falso</div>
+    </div>
+  </header>
+
+  <section class="filter-section card">
+    <h2><i class="fa-solid fa-sliders"></i> Filtrar por tema</h2>
+    <div class="filter-pills" id="filterPills">
+      <button class="filter-pill active" data-filter="all">Todos</button>
+      <button class="filter-pill" data-filter="Tema 1">Tema 1</button>
+      <button class="filter-pill" data-filter="Tema 2">Tema 2</button>
+      <button class="filter-pill" data-filter="Tema 3">Tema 3</button>
+      <button class="filter-pill" data-filter="Tema 4">Tema 4</button>
+      <button class="filter-pill" data-filter="Tema 5">Tema 5</button>
+      <button class="filter-pill" data-filter="examen">Todos los exámenes</button>
+      <button class="filter-pill" data-filter="Examen 1">Examen 1</button>
+      <button class="filter-pill" data-filter="Examen 2">Examen 2</button>
+      <button class="filter-pill" data-filter="Examen 3">Examen 3</button>
+      <button class="filter-pill" data-filter="Examen 4">Examen 4</button>
+    </div>
+  </section>
+
+  <div class="progress-card card" id="progressCard">
+    <div class="progress-header">
+      <span class="label" id="counterLabel">Pregunta 1 de 280</span>
+
+      <div class="score">
+        <span class="hits"><i class="fa-regular fa-circle-check"></i> <span id="hitsCount">0</span></span>
+        <span class="misses"><i class="fa-regular fa-circle-xmark"></i> <span id="missesCount">0</span></span>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="quiz-card card" id="quizCard">
+    <div class="topic-row">
+      <span class="topic-tag" id="topicTag" style="display:none">Tema 1</span>
+      <span class="question-num" id="questionNum">#1</span>
+    </div>
+    <div class="question-text" id="questionText">Cargando preguntas...</div>
+    <div class="buttons" id="buttons">
+      <button class="btn btn-true" id="btnTrue"><i class="fa-regular fa-circle-check"></i> Verdadero</button>
+      <button class="btn btn-false" id="btnFalse"><i class="fa-regular fa-circle-xmark"></i> Falso</button>
+    </div>
+    <div class="explanation" id="explanation"></div>
+    <button class="next-btn next" id="nextBtn" disabled>Siguiente <i class="fa-solid fa-arrow-right"></i></button>
+  </div>
+
+  <div class="summary" id="summaryView">
+    <div class="card" style="padding:32px 24px">
+      <h2><i class="fa-solid fa-circle-check" style="color:#34d399"></i> Resultado final</h2>
+      <div class="sub">Has completado todas las preguntas seleccionadas.</div>
+      <div class="results-grid">
+        <div class="result-box"><div class="num good" id="finalHits">0</div><div class="lbl">Aciertos</div></div>
+        <div class="result-box"><div class="num bad" id="finalMisses">0</div><div class="lbl">Fallos</div></div>
+        <div class="result-box"><div class="num" id="finalPercent">0%</div><div class="lbl">Precisión</div></div>
+      </div>
+      <div class="review-section" id="reviewSection">
+        <h3><i class="fa-solid fa-triangle-exclamation" style="color:#f87171"></i> Repaso de respuestas</h3>
+        <div id="reviewList"></div>
+      </div>
+      <button class="retry-btn" id="retryBtn"><i class="fa-solid fa-rotate-left"></i> Volver a empezar</button>
+    </div>
+  </div>
+
+  <footer>Bases del Aprendizaje y Educación · Test V/F</footer>
+</div>
+
+<script>
+const DATA = [
+  // TEMA 1 (23 preguntas)
+  {q:"El sistema nervioso se divide en sistema nervioso central (SNC) y sistema nervioso periférico (SNP).",a:true,t:"Tema 1"},
+  {q:"El SNP está compuesto por el encéfalo y la médula espinal.",a:false,t:"Tema 1"},
+  {q:"El estudio del cerebro puede llevarse únicamente a cabo desde un enfoque macroscópico.",a:false,t:"Tema 1"},
+  {q:"Las neuronas representan la mayoría de las células en el sistema nervioso.",a:true,t:"Tema 1"},
+  {q:"Las células satélite se encuentran en el SNP.",a:true,t:"Tema 1"},
+  {q:"Las neuronas constituyen la unidad estructural y funcional básica del sistema nervioso y, consecuentemente, del cerebro.",a:true,t:"Tema 1"},
+  {q:"Las neuronas eferentes transmiten la información desde los órganos sensoriales al SNC.",a:false,t:"Tema 1"},
+  {q:"Las sinapsis pueden ser de dos tipos: eléctricas y químicas; estas últimas son las más frecuentes.",a:true,t:"Tema 1"},
+  {q:"De las tres meninges que envuelven al encéfalo y a la médula espinal, la piamadre es la más externa.",a:false,t:"Tema 1"},
+  {q:"El cerebelo se divide en las siguientes estructuras: el tronco encefálico, el encéfalo, el diencéfalo y el telencéfalo.",a:false,t:"Tema 1"},
+  {q:"El bulbo raquídeo conecta el encéfalo con la médula espinal.",a:true,t:"Tema 1"},
+  {q:"El sistema límbico está integrado por un conjunto de estructuras situadas en la cara externa de cada hemisferio.",a:false,t:"Tema 1"},
+  {q:"La circunvolución del cíngulo es una estructura con forma de almendra, que participa en el procesamiento emocional de los estímulos ambientales (es decir, en la atribución de significado emocional a dichos estímulos).",a:false,t:"Tema 1"},
+  {q:"Desde el punto de vista anatómico, en la corteza pueden identificarse cuatro lóbulos.",a:true,t:"Tema 1"},
+  {q:"En la corteza cerebral, tanto el lóbulo parietal como el temporal se ubican detrás del lóbulo frontal.",a:true,t:"Tema 1"},
+  {q:"Ante un estímulo concreto, las neuronas sensoriales se desactivan con el fin de evitar que el cerebro se dañe.",a:false,t:"Tema 1"},
+  {q:"El aprendizaje es el proceso por el cual los organismos modifican su conducta para adaptarse al entorno.",a:true,t:"Tema 1"},
+  {q:"Los periodos sensibles son momentos en el desarrollo que resultan especialmente óptimos para la adquisición de ciertos aprendizajes.",a:true,t:"Tema 1"},
+  {q:"La sinaptogénesis hace referencia a la formación de nuevos contactos sinápticos entre neuronas, permitiendo la transmisión de los impulsos nerviosos y el intercambio de información.",a:true,t:"Tema 1"},
+  {q:"El momento del desarrollo en el que tiene lugar una mayor proliferación sináptica, se sitúa entre los seis meses y los 6 años.",a:false,t:"Tema 1"},
+  {q:"La Neurogénesis es el proceso por el que se crean nuevas células nerviosas. Su periodo más intenso tiene lugar durante el periodo embrionario.",a:true,t:"Tema 1"},
+  {q:"Desde el punto de vista de la función que desempeñan las neuronas, podemos diferenciar entre: neurona bipolar, multipolar, unipolar y pseudounipolar.",a:false,t:"Tema 1"},
+  {q:"El tálamo es la estructura más grande del diencéfalo.",a:true,t:"Tema 1"},
+  {q:"El aprendizaje de una persona a lo largo de su vida estará condicionado por la información contenida en sus genes y por las influencias ambientales.",a:true,t:"Tema 2"},
+  {q:"La influencia del ambiente sobre el aprendizaje empieza a tener lugar desde el momento del nacimiento.",a:false,t:"Tema 2"},
+  {q:"El estrés materno durante el embarazo incrementa la probabilidad de que posteriormente el menor presente alteraciones cognitivas, emocionales o comportamentales.",a:true,t:"Tema 2"},
+  {q:"La exposición prenatal al alcohol, tabaco y otras drogas se vincula, entre otros, con futuros problemas de comportamiento y con un bajo rendimiento académico.",a:true,t:"Tema 2"},
+  {q:"Dentro de los factores contextuales vinculados con el desarrollo de las capacidades cognitivas, ocupan un papel destacado los genes, y un papel secundario las características sociales, económicas y culturales de las familias.",a:false,t:"Tema 2"},
+  {q:"Del conjunto de conexiones neuronales que se establecen a lo largo de la vida del sujeto, la experiencia será la encargada de determinar cuáles se consolidan y cuales se pierden.",a:true,t:"Tema 2"},
+  {q:"Los ambientes enriquecidos de manera artificial contribuyen a mejorar el desarrollo cerebral.",a:false,t:"Tema 2"},
+  {q:"Durante las diferentes etapas del sueño, el cerebro procesa los aprendizajes adquiridos a lo largo del día, integrando la nueva información en la red de aprendizajes existentes.",a:true,t:"Tema 2"},
+  {q:"El sueño es un proceso irreversible y cíclico en el que se produce una disminución del estado de conciencia y una reducción de la respuesta a los estímulos externos.",a:false,t:"Tema 2"},
+  {q:"El sueño se presenta en ciclos regulares de, aproximadamente, 30 minutos, durante los cuales se atraviesan diferentes etapas.",a:false,t:"Tema 2"},
+  {q:"El sueño profundo o sueño de ondas lentas es más intenso durante las primeras horas de la noche y se caracteriza por presentar en el electroencefalograma (EEG) ondas lentas y de gran amplitud.",a:true,t:"Tema 2"},
+  {q:"Por lo que respecta a estudios realizados sobre la importancia del sueño, la hipótesis del proceso dual sostiene que las diferentes etapas del sueño permiten consolidar distintos tipos de aprendizaje.",a:true,t:"Tema 2"},
+  {q:"La glucosa constituye el componente básico de las membranas de las neuronas.",a:false,t:"Tema 2"},
+  {q:"Las proteínas son macromoléculas constituidas por aminoácidos.",a:true,t:"Tema 2"},
+  {q:"La actividad física es beneficiosa para la salud, pero no constituye un condicionante del rendimiento académico.",a:false,t:"Tema 2"},
+  {q:"La motivación es un estado fisiológico-conductual de alta intensidad, que es desencadenado por un estímulo significativo proveniente del mundo externo (sensorial) o interno (imaginación o memoria).",a:false,t:"Tema 2"},
+  {q:"Los sentimientos hacen referencia a las emociones conscientes, es decir, a la percepción consciente de los cambios fisiológico-conductuales producidos por las emociones.",a:true,t:"Tema 2"},
+  {q:"La amígdala desempeña un papel destacado en el procesamiento de la información emocional, esta información llega a la amígdala a través de dos vías.",a:true,t:"Tema 2"},
+  {q:"La respuesta a la situación de estrés implica una activación del sistema nervioso autónomo parasimpático.",a:false,t:"Tema 2"},
+  {q:"El estrés durante los primeros años de vida parece inducir cambios estructurales en el cerebro en desarrollo.",a:true,t:"Tema 2"},
+  {q:"La motivación puede entenderse como un conjunto de fuerzas que activan al individuo, empujando su conducta en una dirección determinada y de forma sostenida en el tiempo hasta que alcanza una meta u objetivo.",a:true,t:"Tema 2"},
+  {q:"En los orígenes del estudio de la atención, en 1890, se encuentra el trabajo de L. J. Cronbach.",a:false,t:"Tema 2"},
+  {q:"La atención puede definirse como un constructo multidimensional que hace referencia a un estado en el que tenemos un nivel óptimo de activación, lo que nos permite seleccionar la información que queremos priorizar para controlar el curso de nuestras acciones.",a:true,t:"Tema 2"},
+  {q:"El proceso conocido como neurulación comienza en el tercer mes de embarazo.",a:false,t:"Tema 3"},
+  {q:"Una vez se han formado el tubo neural y la cresta neural, el desarrollo embrionario del sistema nervioso pasa por cinco fases superpuestas.",a:true,t:"Tema 3"},
+  {q:"Tras el nacimiento, las primeras fibras en mielinizarse serán las motoras y, posteriormente, las sensoriales (sistema visual, auditivo, etc.).",a:false,t:"Tema 3"},
+  {q:"El desarrollo del cerebro durante la etapa prenatal puede verse alterado tanto por factores genéticos como por factores ambientales teratógenos.",a:true,t:"Tema 3"},
+  {q:"El tamaño del cerebro de un recién nacido es, aproximadamente, el 25% de su tamaño adulto, pero antes de los seis años habrá alcanzado en torno al 90% de lo que será su volumen final.",a:true,t:"Tema 3"},
+  {q:"El cerebro de un recién nacido tiene, aproximadamente, la mitad del número de neuronas que tendrá su cerebro adulto.",a:false,t:"Tema 3"},
+  {q:"El cerebro de un niño de pocos meses tendrá muchas más sinapsis que el cerebro de un adulto.",a:true,t:"Tema 3"},
+  {q:"El cerebro de un bebé de pocos meses puede percibir las diferencias fonéticas de cualquier idioma.",a:true,t:"Tema 3"},
+  {q:"Los estudios sobre adquisición de una segunda lengua han sugerido la existencia de un periodo sensible para el aprendizaje de la gramática, que se situaría entre el tercer y sexto año después del nacimiento.",a:false,t:"Tema 3"},
+  {q:"El entrenamiento musical produce cambios anatómicos y funcionales a nivel cerebral, y estos cambios parecen depender no solo de los años de experiencia, sino también de la edad en la que las personas comenzaron su entrenamiento musical.",a:true,t:"Tema 3"},
+  {q:"Según investigaciones realizadas por Pollak y Zeanah, las condiciones adversas que afectan negativamente al desarrollo de los niños, permiten afirmar que existe un periodo sensible en el desarrollo socioemocional de estos.",a:false,t:"Tema 3"},
+  {q:"Durante la infancia, las diferentes áreas del cerebro maduran a ritmos diferentes y, consecuentemente, el impacto que tendrá una experiencia ambiental concreta podrá ser mayor en un momento que en otro.",a:true,t:"Tema 3"},
+  {q:"El entrenamiento musical antes de los 7 años promoverá cambios cerebrales más profundos y duraderos que facilitarán los aprendizajes futuros.",a:true,t:"Tema 3"},
+  {q:"El cerebro a los 12 años ha alcanzado aproximadamente el que será su tamaño adulto, por lo que su desarrollo parece haberse completado.",a:false,t:"Tema 3"},
+  {q:"Durante la adolescencia, se producen cambios significativos tanto en la materia gris como en la materia blanca del cerebro.",a:true,t:"Tema 3"},
+  {q:"Durante la adolescencia, la disminución de la materia blanca y el aumento de la materia gris contribuirán al refinamiento de la conectividad y al incremento de la eficiencia cerebral.",a:false,t:"Tema 3"},
+  {q:"Algunas de las estructuras que sufren una mayor transformación en el cerebro adolescente son, entre otras, el cerebelo, la glándula pineal o la amígdala.",a:true,t:"Tema 3"},
+  {q:"Durante la adolescencia, se produce un cambio en los patrones de sueño-vigilia.",a:true,t:"Tema 3"},
+  {q:"Durante la adolescencia, la amígdala es uno de los órganos que no aumenta su volumen.",a:false,t:"Tema 3"},
+  {q:"El volumen del núcleo accumbens alcanza su punto máximo al final de la adolescencia y comienza a disminuir en los primeros años de la veintena.",a:true,t:"Tema 3"},
+  {q:"Cultivar una relación sana con la comida durante la infancia y la adolescencia puede sentar las bases para promover una autoimagen corporal positiva.",a:true,t:"Tema 3"},
+  {q:"La capacidad metacognitiva (pensar sobre el pensamiento) va dejando de desarrollarse durante la adolescencia a medida que maduran las áreas prefrontales de la corteza.",a:false,t:"Tema 3"},
+  {q:"Durante la tercera década de vida es el momento en el que se consigue un mayor rendimiento cognitivo y un uso más eficiente de los procesos cognitivos de nivel superior.",a:true,t:"Tema 3"},
+  {q:"La inteligencia fluida implica las habilidades de procesamiento de la información que están influenciadas por los conocimientos previos.",a:false,t:"Tema 3"},
+  {q:"Los cambios estructurales que experimenta el cerebro durante la adultez, se manifiestan en una progresiva pérdida de volumen a lo largo de la adultez media, que se intensificará en la adultez tardía.",a:true,t:"Tema 3"},
+  {q:"Aunque la capacidad de aprendizaje cambia a lo largo de la vida, y a medida que envejecemos puede verse afectada, el cerebro adulto conserva su plasticidad y, por tanto, su capacidad de aprendizaje.",a:true,t:"Tema 3"},
+  {q:"Durante el proceso de la lectura, la desambiguación léxica de una palabra se refiere a la adjudicación de un significado concreto entre todos aquellos posibles.",a:true,t:"Tema 4"},
+  {q:"La copia de un texto escrito constituye un acto de producción lingüística.",a:false,t:"Tema 4"},
+  {q:"Conocer el significado de una palabra implica también conocer su ortografía.",a:false,t:"Tema 4"},
+  {q:"La vía de procesamiento fonológico de la teoría de la ruta dual es preeminente en el idioma español.",a:true,t:"Tema 4"},
+  {q:"Las dos vías propuestas por la teoría de la ruta dual de la lectura son entre sí excluyentes.",a:false,t:"Tema 4"},
+  {q:"Los procesos cerebrales que tienen lugar durante la lectura en voz alta son, esencialmente, los mismos que ocurren durante la lectura en silencio.",a:true,t:"Tema 4"},
+  {q:"Los procesos cerebrales que tienen lugar en el tratamiento de cuestiones matemáticas se ven afectados por los métodos de enseñanza utilizados.",a:true,t:"Tema 4"},
+  {q:"Los procesos cerebrales que tienen lugar en la lectura son los mismos en cualquier idioma.",a:false,t:"Tema 4"},
+  {q:"El periodo sensible para el aprendizaje de la semántica va desde el nacimiento hasta los 3 años de edad.",a:false,t:"Tema 4"},
+  {q:"El léxico mental se refiere al conjunto de aprendizajes correspondientes a las palabras y a su organización en nuestra mente.",a:true,t:"Tema 4"},
+  {q:"Los individuos con discalculia muestran un número de neuronas inferior a lo normal en el lóbulo parietal.",a:true,t:"Tema 4"},
+  {q:"Las actuaciones dirigidas a mejorar el procesamiento fonológico son contraproducentes para ayudar a los niños disléxicos a aprender a leer.",a:false,t:"Tema 4"},
+  {q:"Durante la lectura, un texto llega a ser coherente cuando es posible construir varios modelos mentales de él.",a:true,t:"Tema 4"},
+  {q:"Las deficientes conexiones de las áreas responsables del procesamiento sonoro del lenguaje aparecen relacionadas con la dislexia.",a:true,t:"Tema 4"},
+  {q:"El lóbulo temporal es preeminente en la representación espacial de los números.",a:false,t:"Tema 4"},
+  {q:"El área de Broca está involucrada en la producción del lenguaje.",a:true,t:"Tema 4"},
+  {q:"Cuando se lee en silencio, el hecho de no pronunciar las palabras hace que el área de Broca no se active.",a:false,t:"Tema 4"},
+  {q:"La dificultad de aprendizaje de la lectura está asociada a malformaciones en los órganos sensoriales de la visión o audición.",a:false,t:"Tema 4"},
+  {q:"Las letras se procesan de forma más rápida y eficaz cuando se presentan en el contexto de una palabra que cuando se presentan de forma aislada.",a:true,t:"Tema 4"},
+  {q:"Realizar un resumen de un tema de Bases del Aprendizaje y Educación constituye un acto de producción de lenguaje escrito.",a:true,t:"Tema 4"},
+  {q:"Los métodos de enseñanza de las matemáticas centrados en el aprendizaje de instrucciones son preferibles a los centrados en el aprendizaje de estrategias.",a:false,t:"Tema 4"},
+  {q:"Las estrategias de repetición son recomendables en el tratamiento de la dificultad de aprendizaje de las matemáticas.",a:true,t:"Tema 4"},
+  {q:"La morfología hace referencia al significado de las palabras.",a:false,t:"Tema 4"},
+  {q:"Las claves últimas para comprender el significado del lenguaje son aportadas por la pragmática.",a:true,t:"Tema 4"},
+  {q:"El razonamiento es un proceso cognitivo básico que nos permite hacer inferencias (crear conclusiones) a partir de ciertas premisas o suposiciones iniciales.",a:true,t:"Tema 5"},
+  {q:"En el razonamiento de tipo deductivo, la conclusión alcanzada es nueva, puesto que se trata de información distinta a la aportada por las premisas.",a:false,t:"Tema 5"},
+  {q:"En un argumento deductivo existen distintos grados de validez.",a:false,t:"Tema 5"},
+  {q:"En el razonamiento inductivo, su argumento es fuerte si es improbable que su conclusión sea falsa, siendo sus premisas verdaderas.",a:true,t:"Tema 5"},
+  {q:"En general, podemos decir que las personas utilizan más las estrategias de verificación que las de falsación.",a:true,t:"Tema 5"},
+  {q:"Cuando razonamos, se producen errores sistemáticos, no fortuitos, en el proceso de razonamiento o «sesgos de razonamiento».",a:true,t:"Tema 5"},
+  {q:"El sesgo de la creencia hace referencia al modo en el que el individuo busca reforzar su sistema de creencias prestando atención a la información consistente con estas y obviando cualquier información que pudiera contradecirlas.",a:false,t:"Tema 5"},
+  {q:"El razonamiento que nos resultará más sencillo será aquel con contenido familiar y que implique una respuesta negativa.",a:false,t:"Tema 5"},
+  {q:"La corteza prefrontal juega un papel primordial en la producción del razonamiento, aunque no es la única estructura cerebral implicada en ello.",a:true,t:"Tema 5"},
+  {q:"Nuestra capacidad de razonar de forma eficaz vendrá marcada únicamente por las experiencias y aprendizajes que vamos adquiriendo a lo largo de la vida.",a:false,t:"Tema 5"},
+  {q:"Para analizar el proceso de solución de problemas es posible distinguir entre estrategias alegóricas y estrategias heurísticas.",a:false,t:"Tema 5"},
+  {q:"Una fórmula matemática forma parte de las estrategias heurísticas.",a:false,t:"Tema 5"},
+  {q:"Dos de las características del heurístico Análisis medios-fines son que la búsqueda se encuentra explícitamente guiada por el conocimiento de la meta y que puede aplicarse de forma recursiva; es decir, avanzar hacia delante o retroceder.",a:true,t:"Tema 5"},
+  {q:"El heurístico conocido como Búsqueda aleatoria está basado en el proceso ensayo-error.",a:true,t:"Tema 5"},
+  {q:"Pensar de forma creativa supone utilizar el pensamiento convergente, evitando, en la medida de lo posible, el pensamiento divergente.",a:false,t:"Tema 5"},
+  {q:"La creatividad forma parte de todos los aspectos de la vida. No se trata de un don, sino de un aspecto de la inteligencia general humana que está presente en la vida diaria, no estando restringido a una pequeña élite de personas excepcionales.",a:true,t:"Tema 5"},
+  {q:"Las áreas corticales prefrontal y parietal tienen un importante papel en la resolución de problemas.",a:true,t:"Tema 5"},
+  {q:"Las regiones de la corteza parietal izquierda están más implicadas en los procesos de atención, mientras que las de la derecha se implican más en el trabajo visoespacial.",a:false,t:"Tema 5"},
+  {q:"El verdadero reto de las intervenciones educativas es que se dé un dominio autónomo que permita al sujeto transferir lo aprendido de forma espontánea a nuevos problemas en los que pueda resultar de utilidad.",a:true,t:"Tema 5"},
+  {q:"En la toma de decisiones, el «modelo de utilidad esperada» es un modelo normativo estándar de la decisión individual en situaciones de riesgo en las que sí es posible realizar un cálculo de las consecuencias asociadas a las diferentes alternativas de elección.",a:true,t:"Tema 5"},
+  {q:"Al contrario de lo que sí ocurre en la solución de problemas, en la toma de decisiones no existen heurísticos.",a:false,t:"Tema 5"},
+  {q:"El heurístico Reconocimiento solo es aplicable cuando se reconoce, al menos, una alternativa de las presentadas y el resto no se conocen.",a:true,t:"Tema 5"},
+  {q:"En la toma de decisiones, los adolescentes muestran una respuesta exagerada del núcleo accumbens en anticipación a las recompensas, en comparación con niños y adultos.",a:true,t:"Tema 5"},
+  {q:"La toma de decisiones es algo personal y no depende nunca de trastornos psiquiátricos y/o del neurodesarrollo.",a:false,t:"Tema 5"},
+  {q:"El axón constituye el centro metabólico de la neurona.",a:false,t:"Examen 1"},
+  {q:"En las sinapsis eléctricas, el impulso nervioso pasa directamente a través de uniones comunicantes.",a:true,t:"Examen 1"},
+  {q:"El espacio subaracnoideo se encuentra entre la aracnoides y la duramadre.",a:false,t:"Examen 1"},
+  {q:"El núcleo rojo forma parte del bulbo raquídeo.",a:false,t:"Examen 1"},
+  {q:"El epitálamo controla el sistema endocrino.",a:false,t:"Examen 1"},
+  {q:"Los dos hemisferios del cerebelo están unidos por el cuerpo calloso.",a:false,t:"Examen 1"},
+  {q:"La amígdala interviene de manera decisiva en la expresión de las emociones.",a:true,t:"Examen 1"},
+  {q:"La adquisición de los aprendizajes fuera de su correspondiente período sensible requerirá de más tiempo y de una mayor cantidad de recursos cognitivos.",a:true,t:"Examen 1"},
+  {q:"El estado nutricional de las gestantes constituye un factor clave para garantizar tanto la salud materna como el adecuado crecimiento del feto.",a:true,t:"Examen 1"},
+  {q:"La ansiedad y el estrés activan la respuesta neuroendocrina del organismo, incrementándose los niveles de cortisol en el torrente sanguíneo.",a:true,t:"Examen 1"},
+  {q:"Las drogas legales e ilegales suelen atravesar fácilmente la membrana placentaria.",a:true,t:"Examen 1"},
+  {q:"La evidencia científica respalda la necesidad de enriquecer de manera artificial los ambientes de aprendizaje.",a:false,t:"Examen 1"},
+  {q:"El sueño paradójico se caracteriza por la presencia de ondas lentas y de gran amplitud en el electroencefalograma (EEG).",a:false,t:"Examen 1"},
+  {q:"El ejercicio físico de tipo aeróbico contribuye a mejorar los procesos de aprendizaje y memoria.",a:true,t:"Examen 1"},
+  {q:"Las emociones tienen un importante valor adaptativo.",a:true,t:"Examen 1"},
+  {q:"La atención es un constructo unidimensional.",a:false,t:"Examen 1"},
+  {q:"Durante el desarrollo embrionario, la producción neuronal no sigue la misma secuencia temporal en todas las áreas del sistema nervioso.",a:true,t:"Examen 1"},
+  {q:"La edad y el nivel educativo de las mujeres embarazadas son variables explicativas del consumo de drogas durante el embarazo.",a:true,t:"Examen 1"},
+  {q:"La mielinización de las diferentes regiones del sistema nervioso sigue un patrón temporal ordenado y predecible.",a:true,t:"Examen 1"},
+  {q:"La mayoría de los períodos sensibles de aprendizaje tiene lugar durante la adolescencia.",a:false,t:"Examen 1"},
+  {q:"La mielinización del cuerpo calloso durante la adolescencia dificulta la comunicación entre los hemisferios.",a:false,t:"Examen 1"},
+  {q:"Durante la adolescencia, la glándula pineal comienza a liberar melatonina más tarde, produciéndose un desplazamiento del ciclo biológico del sueño.",a:true,t:"Examen 1"},
+  {q:"Durante la adultez tardía, puede observarse, a medida que se envejece, un incremento en la activación bilateral del cerebro al realizar tareas que inicialmente estaban lateralizadas.",a:true,t:"Examen 1"},
+  {q:"La velocidad de procesamiento de la información aumenta a medida que envejecemos.",a:false,t:"Examen 1"},
+  {q:"La morfología hace referencia al significado de las palabras.",a:false,t:"Examen 1"},
+  {q:"Los aprendizajes relativos al léxico mental pueden adquirirse con la misma efectividad a lo largo de toda la vida.",a:true,t:"Examen 1"},
+  {q:"De acuerdo con el efecto de superioridad de la palabra, durante la lectura, las letras se reconocen de manera más rápida y eficaz en el contexto de una palabra que cuando se presentan aisladas.",a:true,t:"Examen 1"},
+  {q:"Conocer el significado de una palabra implica conocer también su equivalencia gráfica.",a:false,t:"Examen 1"},
+  {q:"El área de Broca es una región cerebral localizada en la parte posterior del lóbulo temporal izquierdo.",a:false,t:"Examen 1"},
+  {q:"Se habla de dificultad de aprendizaje de la lectura cuando el rendimiento en lectura es inferior al esperado, aunque esto no interfiera significativamente con el rendimiento académico o con las actividades de la vida cotidiana que exigen habilidades para la lectura.",a:false,t:"Examen 1"},
+  {q:"Cada operación matemática involucra a muchas zonas cerebrales diferentes.",a:true,t:"Examen 1"},
+  {q:"Todos los métodos de enseñanza de las matemáticas desarrollan las mismas redes y patrones de activación del procesamiento matemático.",a:false,t:"Examen 1"},
+  {q:"En el razonamiento de tipo deductivo, la conclusión o conocimiento resultante es nuevo.",a:false,t:"Examen 1"},
+  {q:"En el conocido como sesgo de la creencia, las creencias preexistentes influyen en la capacidad para aceptar nuevas conclusiones, aunque estén respaldadas lógicamente por las premisas.",a:true,t:"Examen 1"},
+  {q:"La corteza prefrontal juega un papel primordial en la producción del razonamiento.",a:true,t:"Examen 1"},
+  {q:"Nuestra capacidad de razonar de forma eficaz vendrá marcada tanto por la maduración de nuestro sistema nervioso como por las experiencias y aprendizajes que vamos adquiriendo.",a:true,t:"Examen 1"},
+  {q:"El esfuerzo y el tiempo en hallar la solución a un problema son independientes de la familiaridad con el mismo.",a:false,t:"Examen 1"},
+  {q:"El pensamiento divergente es equivalente a la creatividad.",a:false,t:"Examen 1"},
+  {q:"La experiencia y los conocimientos previos de los expertos son las claves diferenciales de su eficiente ejecución para la resolución de un problema frente a los novatos.",a:true,t:"Examen 1"},
+  {q:"El heurístico de representatividad hace referencia al fenómeno por el cual las elecciones que hacen las personas se ven sistemáticamente alteradas por el lenguaje utilizado en la formulación de las opciones.",a:false,t:"Examen 1"},
+  {q:"Las células de Schwann sintetizan la mielina que cubre los axones del sistema nervioso periférico.",a:true,t:"Examen 2"},
+  {q:"Las regiones en las que dos neuronas se comunican entre sí se denominan sinapsis.",a:true,t:"Examen 2"},
+  {q:"La probabilidad de que la neurona postsináptica experimente un potencial de acción aumenta con la entrada de iones positivos.",a:true,t:"Examen 2"},
+  {q:"El cerebelo únicamente recibe aferencias de la médula espinal.",a:false,t:"Examen 2"},
+  {q:"El hipotálamo está implicado en el control de las funciones vegetativas.",a:true,t:"Examen 2"},
+  {q:"Las adicciones representan una alteración del sistema natural de recompensa del cerebro.",a:true,t:"Examen 2"},
+  {q:"La plasticidad cerebral es una cualidad exclusiva de los cerebros infantiles.",a:false,t:"Examen 2"},
+  {q:"El proceso por el cual se pierden las sinapsis que no se utilizan se conoce como poda sináptica.",a:true,t:"Examen 2"},
+  {q:"El aprendizaje de una persona a lo largo de su vida estará determinado exclusivamente por la información contenida en sus genes.",a:false,t:"Examen 2"},
+  {q:"El Trastorno del Espectro Alcohólico Fetal (TEAF) se asocia a la exposición prenatal al alcohol.",a:true,t:"Examen 2"},
+  {q:"La mejora del desarrollo cerebral a través del enriquecimiento artificial del entorno no tiene base neurocientífica.",a:true,t:"Examen 2"},
+  {q:"A la hora de explicar la importancia del sueño en el proceso de aprendizaje, la hipótesis del proceso dual sostiene que las diferentes etapas del sueño permiten consolidar distintos tipos de aprendizaje.",a:true,t:"Examen 2"},
+  {q:"La emoción es un estado fisiológico-conductual de alta intensidad que es desencadenado por un estímulo significativo proveniente del mundo externo (sensorial) o interno (imaginación o memoria).",a:true,t:"Examen 2"},
+  {q:"Cuanto más intensamente se valore un suceso como positivo o negativo, de forma menos eficaz quedará registrado en la memoria.",a:false,t:"Examen 2"},
+  {q:"La motivación no se relaciona con la conducta.",a:false,t:"Examen 2"},
+  {q:"La atención ejecutiva comienza su desarrollo al final del primer año de vida, mostrando importantes cambios madurativos durante los años preescolares.",a:true,t:"Examen 2"},
+  {q:"Durante la etapa prenatal, las primeras fibras nerviosas en mielinizarse son las motoras, seguidas posteriormente por las sensoriales.",a:false,t:"Examen 2"},
+  {q:"El proceso de sinaptogénesis en la etapa fetal se iniciará antes en las regiones subcorticales que en las áreas de la corteza.",a:true,t:"Examen 2"},
+  {q:"Tras el nacimiento, las áreas de asociación de la corteza cerebral son de las primeras en mielinizarse.",a:false,t:"Examen 2"},
+  {q:"Entre el primer y el tercer año después del nacimiento, el cerebro presenta una mayor plasticidad para extraer las reglas gramaticales del lenguaje.",a:true,t:"Examen 2"},
+  {q:"A partir de los 12 años, se distingue entre rostros de otras etnias con mayor precisión que a los 9 meses.",a:false,t:"Examen 2"},
+  {q:"La mielinización del cuerpo calloso, durante la adolescencia, favorece la conectividad hemisférica.",a:true,t:"Examen 2"},
+  {q:"La corteza prefrontal es la zona del cerebro que antes completa su mielinización.",a:false,t:"Examen 2"},
+  {q:"Las personas adultas se muestran menos motivadas para aprender cuando identifican que los aprendizajes pueden aplicarse fácilmente para la resolución de problemas cotidianos.",a:false,t:"Examen 2"},
+  {q:"El conjunto de aprendizajes correspondiente a las palabras y a su organización en nuestra mente se conoce como acceso léxico.",a:false,t:"Examen 2"},
+  {q:"La pragmática es un componente del lenguaje que tiene que ver con el conjunto de reglas que regulan las combinaciones entre las palabras para producir oraciones.",a:false,t:"Examen 2"},
+  {q:"El reconocimiento léxico de las palabras, durante la lectura, se produce a partir de la identificación de la estructura grafémica de las mismas.",a:true,t:"Examen 2"},
+  {q:"Durante la lectura, un texto llega a ser coherente cuando es posible construir varios modelos mentales de él.",a:false,t:"Examen 2"},
+  {q:"La copia de un texto escrito no constituye un acto de producción lingüística.",a:true,t:"Examen 2"},
+  {q:"Los procesos cerebrales que tienen lugar durante la lectura en voz alta son, esencialmente, los mismos que ocurren durante la lectura en silencio.",a:true,t:"Examen 2"},
+  {q:"Las dos vías propuestas por la teoría de la ruta dual de la lectura son entre sí excluyentes.",a:false,t:"Examen 2"},
+  {q:"Los métodos de enseñanza de las matemáticas centrados en el aprendizaje de estrategias son preferibles a los centrados en el aprendizaje de instrucciones.",a:true,t:"Examen 2"},
+  {q:"La verdadera diferencia entre argumentos deductivos e inductivos se refiere a la fuerza deductiva y a la validez inductiva de los argumentos.",a:false,t:"Examen 2"},
+  {q:"El razonamiento humano no está determinado exclusivamente por las leyes de la lógica.",a:true,t:"Examen 2"},
+  {q:"Durante el proceso de razonamiento, los tiempos de respuesta son más largos cuando el resultado del razonamiento implica una respuesta positiva.",a:false,t:"Examen 2"},
+  {q:"Un problema surge cuando la persona desconoce cómo llegar de la situación presente a la situación deseada a través de la acción.",a:true,t:"Examen 2"},
+  {q:"En el heurístico «análisis medios-fines» subyace la idea de que, para reducir las diferencias entre el estado inicial y el objetivo, se puede descomponer el estado meta en varios estados submetas.",a:true,t:"Examen 2"},
+  {q:"Las estructuras cerebrales y redes conectivas implicadas en los procesos de resolución de problemas se encuentran ampliamente distribuidas.",a:true,t:"Examen 2"},
+  {q:"La experiencia y los conocimientos previos de los expertos son las claves diferenciales de su eficiente ejecución para la resolución de un problema frente a los novatos.",a:true,t:"Examen 2"},
+  {q:"El incremento en la actividad del núcleo accumbens que tiene lugar durante la adultez, en comparación con la adolescencia, podría justificar el comportamiento impulsivo y la toma de decisiones desfavorables en los adultos.",a:false,t:"Examen 2"},
+  {q:"Las neuronas constituyen la unidad estructural y funcional básica del sistema nervioso.",a:true,t:"Examen 3"},
+  {q:"Una neurona puede llegar a establecer miles de sinapsis con otras neuronas.",a:true,t:"Examen 3"},
+  {q:"Los neurotransmisores inhibidores facilitan la activación de la neurona postsináptica.",a:false,t:"Examen 3"},
+  {q:"Parece no haber relación entre ciertas alteraciones del cerebelo y trastornos del neurodesarrollo como el autismo o el déficit de atención.",a:false,t:"Examen 3"},
+  {q:"El tálamo es la estructura cerebral desde la que sale la mayor parte de la información sensorial recibida por la corteza.",a:true,t:"Examen 3"},
+  {q:"La corteza somatosensorial primaria forma parte de los lóbulos frontales.",a:false,t:"Examen 3"},
+  {q:"La plasticidad neuronal se extingue con la entrada en la adultez.",a:false,t:"Examen 3"},
+  {q:"La sinaptogénesis se refiere a la pérdida de conexiones sinápticas entre neuronas.",a:false,t:"Examen 3"},
+  {q:"Las características del ambiente intrauterino afectan a la programación genética, repercutiendo directamente sobre el desarrollo del sujeto.",a:true,t:"Examen 3"},
+  {q:"La exposición prenatal al alcohol, tabaco y otras drogas se vincula con futuros problemas de comportamiento, pero no se asocia con un bajo rendimiento académico.",a:false,t:"Examen 3"},
+  {q:"Enriquecer de manera artificial los ambientes de aprendizaje facilita la capacidad de procesamiento de la información del sujeto.",a:false,t:"Examen 3"},
+  {q:"Durante el sueño REM, las ondas registradas en el EEG son rápidas y de baja amplitud, similares a las que se registran en el estado de vigilia.",a:true,t:"Examen 3"},
+  {q:"El uso de argumentos emocionalmente atractivos por parte de los publicistas se fundamenta en la influencia que la carga emocional de nuestras vivencias tiene en el grado en que las recordamos.",a:true,t:"Examen 3"},
+  {q:"Las emociones ejercen un papel fundamental en los procesos de aprendizaje, no así en los de memoria.",a:false,t:"Examen 3"},
+  {q:"Las situaciones de estrés muy intensas y/o de larga duración en el tiempo influirán positivamente en el rendimiento cognitivo y en el aprendizaje.",a:false,t:"Examen 3"},
+  {q:"Al hablar de la atención, cabe destacar que los aspectos relacionados con la orientación voluntaria o la supresión de la información irrelevante o distractora irán empeorando durante la niñez.",a:false,t:"Examen 3"},
+  {q:"El proceso de mielinización ocurre de manera sincrónica en todo el cerebro.",a:false,t:"Examen 3"},
+  {q:"La formación de las futuras madres para su autocuidado es una vía ineficaz de promoción del correcto desarrollo fetal.",a:false,t:"Examen 3"},
+  {q:"La mielinización de las fibras visuales que proyectan sobre la corteza se completará durante el primer año de vida.",a:true,t:"Examen 3"},
+  {q:"La extracción de las reglas gramaticales del lenguaje es un mecanismo que comienza a estar presente a partir de los tres años de edad.",a:false,t:"Examen 3"},
+  {q:"El período sensible para la discriminación de rostros tiene lugar entre el primero y el segundo año de edad.",a:false,t:"Examen 3"},
+  {q:"Las diferencias en el ritmo de crecimiento cerebral durante la adolescencia se deben tanto a factores genéticos como a los cambios hormonales relacionados con la pubertad.",a:true,t:"Examen 3"},
+  {q:"La propensión a asumir riesgos durante la adolescencia es independiente de las características individuales.",a:false,t:"Examen 3"},
+  {q:"Durante la adultez, el aprendizaje resultará más efectivo cuanto más se vinculen las necesidades de desarrollo inmediatas.",a:true,t:"Examen 3"},
+  {q:"Los aprendizajes referidos al lenguaje están interconectados con el resto de los aprendizajes del individuo.",a:true,t:"Examen 3"},
+  {q:"La gramática tiene que ver con la utilización adaptativa del lenguaje en la interacción del individuo con su entorno.",a:false,t:"Examen 3"},
+  {q:"El período sensible para el aprendizaje del léxico se sitúa entre el nacimiento y los tres años de edad.",a:false,t:"Examen 3"},
+  {q:"Durante el proceso lector, las letras se reconocen de manera más rápida cuando se presentan aisladas que cuando se presentan en el contexto de una palabra.",a:false,t:"Examen 3"},
+  {q:"La comprensión de un texto está influenciada por los aprendizajes previos del lector.",a:true,t:"Examen 3"},
+  {q:"La copia de un texto escrito constituye un acto de producción lingüística.",a:false,t:"Examen 3"},
+  {q:"Las dos modalidades de procesamiento matemático (la intuitivo-espacial y la lingüístico-exacta) son excluyentes entre sí.",a:false,t:"Examen 3"},
+  {q:"Las personas que padecen trastorno del cálculo muestran un número de neuronas inferior a lo normal en el lóbulo occipital.",a:false,t:"Examen 3"},
+  {q:"Atendiendo a una aproximación tradicional basada en las ramas de la lógica, podemos decir que existen tres tipos de razonamiento.",a:false,t:"Examen 3"},
+  {q:"Para disminuir la incertidumbre asociada al conocimiento fruto del razonamiento deductivo, el individuo puede utilizar dos estrategias: inducción enumerativa o inducción eliminativa.",a:false,t:"Examen 3"},
+  {q:"El razonamiento que nos resultará más sencillo será aquel con contenido novedoso y que implique una respuesta negativa.",a:false,t:"Examen 3"},
+  {q:"En el estadio de «operaciones formales», los sujetos comienzan a formular hipótesis y se inicia el razonamiento proposicional.",a:true,t:"Examen 3"},
+  {q:"El razonamiento analógico permite resolver un problema a partir de la experiencia previa.",a:true,t:"Examen 3"},
+  {q:"Dentro del proceso de solución de problemas, la creatividad hace que el sujeto sea sensible a los problemas, que detecte las deficiencias, las grietas o las lagunas en los conocimientos.",a:true,t:"Examen 3"},
+  {q:"Es más probable que seamos capaces de captar problemas en áreas sobre las que disponemos de una base de conocimiento.",a:true,t:"Examen 3"},
+  {q:"El incremento en la actividad del núcleo accumbens podría justificar el comportamiento impulsivo y la toma de decisiones desfavorables durante la niñez.",a:false,t:"Examen 3"},
+  {q:"Las células de Schwann forman las vainas de mielina alrededor de los axones en el sistema nervioso periférico.",a:true,t:"Examen 4"},
+  {q:"En las sinapsis químicas, la acción de los neurotransmisores excitadores sobre la neurona postsináptica hace que el potencial de membrana en reposo se vuelva más positivo.",a:true,t:"Examen 4"},
+  {q:"La médula espinal constituye la principal vía a partir de la cual se conecta el encéfalo con el resto del cuerpo.",a:true,t:"Examen 4"},
+  {q:"El núcleo rojo forma parte del mesencéfalo.",a:true,t:"Examen 4"},
+  {q:"El cerebelo está formado por dos hemisferios unidos entre sí por la masa intermedia.",a:false,t:"Examen 4"},
+  {q:"La corteza somatosensorial primaria forma parte de los lóbulos frontales.",a:false,t:"Examen 4"},
+  {q:"El proceso por el cual se pierden las sinapsis que no se utilizan se conoce como poda sináptica.",a:true,t:"Examen 4"},
+  {q:"La neurona postsináptica es aquella que transmite el impulso nervioso.",a:false,t:"Examen 4"},
+  {q:"La influencia del ambiente sobre el aprendizaje se produce exclusivamente tras el nacimiento.",a:false,t:"Examen 4"},
+  {q:"Descansar 15-30 minutos con los ojos cerrados y en silencio, tras realizar una tarea de aprendizaje, dificulta la memorización.",a:false,t:"Examen 4"},
+  {q:"Los estudiantes tienden a consumir un desayuno insuficiente, poco equilibrado o, incluso, prescindir de él.",a:true,t:"Examen 4"},
+  {q:"Los programas de actividad física en las escuelas empeoran el rendimiento académico de los estudiantes.",a:false,t:"Examen 4"},
+  {q:"El importante papel que desempeña la amígdala en la formación de asociaciones entre los estímulos y los refuerzos positivos o negativos hace que sea una estructura esencial para el aprendizaje y la memoria emocional.",a:true,t:"Examen 4"},
+  {q:"La memoria a largo plazo se ve especialmente facilitada por los niveles altos de cortisol.",a:false,t:"Examen 4"},
+  {q:"Para maximizar los aprendizajes, se deben proporcionar siempre estímulos esperados por el sujeto y que ya le han sido anticipados.",a:false,t:"Examen 4"},
+  {q:"La red de alerta actúa en situaciones que exigen el control activo del comportamiento o el procesamiento de la información.",a:false,t:"Examen 4"},
+  {q:"El proceso de sinaptogénesis en la etapa fetal se iniciará antes en las áreas de la corteza que en las regiones subcorticales.",a:false,t:"Examen 4"},
+  {q:"El desconocimiento por parte de las gestantes sobre los efectos nocivos que tiene la exposición del feto a sustancias de abuso parece estar relacionado con un mayor consumo de estas sustancias durante el embarazo.",a:true,t:"Examen 4"},
+  {q:"A los cuatro años, los niños hispanohablantes tienen mayor capacidad discriminatoria para los sonidos del español que para los del inglés.",a:true,t:"Examen 4"},
+  {q:"Las experiencias musicales informales parecen no contribuir al desarrollo cerebral durante los primeros años de vida.",a:false,t:"Examen 4"},
+  {q:"La tendencia de los adolescentes hacia las conductas de alto riesgo tiene que ver con los cambios en la producción de melatonina en estas edades.",a:false,t:"Examen 4"},
+  {q:"El desplazamiento del ciclo del sueño que se observa en la adolescencia a menudo entra en conflicto con las demandas sociales a las que se enfrentan los adolescentes.",a:true,t:"Examen 4"},
+  {q:"Las habilidades verbales no se ven significativamente afectadas por el envejecimiento cognitivo.",a:true,t:"Examen 4"},
+  {q:"Los adultos estarán más motivados para aprender cuando perciben que los aprendizajes les pueden ayudar a resolver problemas de la vida real.",a:true,t:"Examen 4"},
+  {q:"La pragmática tiene que ver con la utilización adaptativa del lenguaje en la interacción del individuo con su entorno.",a:true,t:"Examen 4"},
+  {q:"El acceso léxico a una palabra es más rápido cuando está sola que cuando está intercalada entre otras en una oración.",a:false,t:"Examen 4"},
+  {q:"El aprendizaje de los componentes fonológico y morfosintáctico de la lengua se puede lograr con la misma eficiencia a lo largo de toda la vida.",a:false,t:"Examen 4"},
+  {q:"Durante la lectura, el procesamiento léxico tiene que ver con el reconocimiento de los símbolos gráficos como palabras.",a:false,t:"Examen 4"},
+  {q:"En la realización de una copia de un texto escrito intervienen todos los procesos que, normalmente, tienen lugar en la escritura como actividad de producción lingüística.",a:false,t:"Examen 4"},
+  {q:"Ya al nacer, el cerebro de los seres humanos viene equipado con las estructuras y procedimientos básicos para utilizar los números como una herramienta perceptiva.",a:true,t:"Examen 4"},
+  {q:"Las personas con dificultad de aprendizaje de las matemáticas muestran un número de neuronas inferior a lo normal en el lóbulo parietal.",a:true,t:"Examen 4"},
+  {q:"La realización de actividades de procesamiento fonológico en educación infantil perjudica el rendimiento lector posterior.",a:false,t:"Examen 4"},
+  {q:"La diferencia fundamental entre argumentos deductivos e inductivos se refiere a la generalidad de sus conclusiones y a la particularidad de sus premisas.",a:false,t:"Examen 4"},
+  {q:"En el razonamiento inductivo, las conclusiones solo tienen determinado grado de probabilidad de ser ciertas.",a:true,t:"Examen 4"},
+  {q:"La situación problemática se experimenta subjetivamente como una situación de tensión o necesidad.",a:true,t:"Examen 4"},
+  {q:"En el razonamiento analógico, al enfrentarse a un nuevo problema, el sujeto lo compara con sus experiencias previas recuperando casos análogos que ayudarán a la resolución.",a:true,t:"Examen 4"},
+  {q:"En el conocido como «círculo virtuoso» las experiencias de fracaso en la resolución de problemas producen rechazo a la realización de este tipo de tareas.",a:false,t:"Examen 4"},
+  {q:"Los procesos impulsivos/intuitivos y los procesos reflexivos podrían activarse en paralelo en los primeros momentos de la toma de decisiones.",a:true,t:"Examen 4"},
+  {q:"La mejora progresiva del proceso de toma de decisiones está supeditada al desarrollo neurobiológico de las estructuras implicadas.",a:true,t:"Examen 4"},
+  {q:"La toma de decisiones no suele verse alterada en los trastornos psiquiátricos y del neurodesarrollo.",a:false,t:"Examen 4"}
+];
+
+const $ = id => document.getElementById(id);
+const allQuestions = DATA.map((q, i) => ({...q, id: i, explanation: ''}));
+let filtered = [...allQuestions];
+let current = 0, hits = 0, misses = 0, answered = false, history = [];
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function applyFilter(filter) {
+  if (filter === 'all') { filtered = shuffle([...allQuestions]); }
+  else if (filter === 'examen') filtered = allQuestions.filter(q => q.t && q.t.startsWith('Examen'));
+  else filtered = allQuestions.filter(q => q.t === filter);
+  current = 0; hits = 0; misses = 0; history = [];
+  $('hitsCount').textContent = '0';
+  $('missesCount').textContent = '0';
+  if (filtered.length === 0) {
+    $('quizCard').style.display = 'none';
+    $('progressCard').style.display = 'none';
+    $('summaryView').style.display = 'none';
+    return;
+  }
+  $('quizCard').style.display = 'flex';
+  $('progressCard').style.display = 'block';
+  $('summaryView').style.display = 'none';
+  // Update filter pills
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.toggle('active', p.dataset.filter === filter));
+  render();
+}
+
+function render() {
+  if (current >= filtered.length) { showSummary(); return; }
+  answered = false;
+  const q = filtered[current];
+  $('counterLabel').textContent = `Pregunta ${current + 1} de ${filtered.length}`;
+  $('progressFill').style.width = `${(current / filtered.length) * 100}%`;
+  $('questionNum').textContent = `#${current + 1}`;
+  $('questionText').textContent = q.q;
+  if (q.t) {
+    $('topicTag').textContent = q.t;
+    $('topicTag').style.display = 'inline-block';
+  } else {
+    $('topicTag').style.display = 'none';
+  }
+  $('explanation').textContent = '';
+  $('explanation').style.display = 'none';
+  $('btnTrue').disabled = false; $('btnFalse').disabled = false;
+  $('btnTrue').className = 'btn btn-true';
+  $('btnFalse').className = 'btn btn-false';
+  const isLast = current >= filtered.length - 1;
+  $('nextBtn').disabled = true;
+  $('nextBtn').className = 'next-btn ' + (isLast ? 'finish' : 'next');
+  $('nextBtn').innerHTML = isLast ? '<i class="fa-regular fa-circle-check"></i> Ver resultados' : 'Siguiente <i class="fa-solid fa-arrow-right"></i>';
+}
+
+function handleAnswer(selected) {
+  if (answered) return;
+  answered = true;
+  const q = filtered[current];
+  const correct = selected === q.a;
+  if (correct) { hits++; $('hitsCount').textContent = hits; }
+  else { misses++; $('missesCount').textContent = misses; }
+  $('btnTrue').disabled = true; $('btnFalse').disabled = true;
+  if (q.a === true) {
+    $('btnTrue').classList.add(selected === true ? 'selected-correct' : 'show-correct');
+    if (selected === false) $('btnFalse').classList.add('selected-wrong');
+  } else {
+    $('btnFalse').classList.add(selected === false ? 'selected-correct' : 'show-correct');
+    if (selected === true) $('btnTrue').classList.add('selected-wrong');
+  }
+  if (q.explanation) {
+    $('explanation').textContent = q.explanation;
+    $('explanation').style.display = 'block';
+  }
+  history.push({q: q.q, c: correct, a: q.a, t: q.t});
+  $('nextBtn').disabled = false;
+}
+
+function goNext() { current++; render(); }
+
+function showSummary() {
+  $('quizCard').style.display = 'none';
+  $('progressCard').style.display = 'none';
+  $('summaryView').style.display = 'block';
+  $('finalHits').textContent = hits;
+  $('finalMisses').textContent = misses;
+  const pct = filtered.length > 0 ? Math.round((hits / filtered.length) * 100) : 0;
+  $('finalPercent').textContent = pct + '%';
+  let html = '';
+  history.forEach((h, i) => {
+    const icon = h.c ? 'fa-circle-check' : 'fa-circle-xmark';
+    const color = h.c ? '#34d399' : '#f87171';
+    const tag = h.t ? `[${h.t}] ` : '';
+    html += `<div class="review-item">
+      <span class="icon" style="color:${color}"><i class="fa-regular ${icon}"></i></span>
+      <span class="q-text">${tag}${h.q}</span>
+    </div>`;
+  });
+  $('reviewList').innerHTML = html || '<div style="color:#34d399;padding:10px;text-align:center">✓ Todas correctas</div>';
+}
+
+$('btnTrue').addEventListener('click', () => handleAnswer(true));
+$('btnFalse').addEventListener('click', () => handleAnswer(false));
+$('nextBtn').addEventListener('click', goNext);
+$('retryBtn').addEventListener('click', () => {
+  const active = document.querySelector('.filter-pill.active');
+  applyFilter(active ? active.dataset.filter : 'all');
+});
+
+document.querySelectorAll('.filter-pill').forEach(p => {
+  p.addEventListener('click', () => applyFilter(p.dataset.filter));
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'v' || e.key === 'V') $('btnTrue').click();
+  if (e.key === 'f' || e.key === 'F') $('btnFalse').click();
+  if (e.key === 'Enter' && !$('nextBtn').disabled) $('nextBtn').click();
+});
+
+applyFilter('all');
+</script>
+</body>
+</html>
